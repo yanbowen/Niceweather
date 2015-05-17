@@ -28,7 +28,7 @@ public class NiceweatherOpenHelper extends SQLiteOpenHelper {
 	 * @param version
 	 */
 
-	public static final String CREATE_CITY = "create table Province(" 
+	public static final String CREATE_CITY = "create table City(" 
 			+ "id integer primary key autoincrement,"
 			+ "city_name text,"
 			+ "city_code text,"
