@@ -1,7 +1,9 @@
 package com.niceweather.app.activity;
 
 
+
 import com.niceweather.app.R;
+import com.niceweather.app.receiver.AutoUpdateService;
 import com.niceweather.app.util.HttpCallbackListener;
 import com.niceweather.app.util.HttpUtil;
 import com.niceweather.app.util.Utility;
@@ -19,33 +21,41 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-public class WeatherActivity extends Activity{
+public class WeatherActivity extends Activity implements OnClickListener{
 
 	private LinearLayout weatherInfoLayout;
 	/**
-	 * ÓÃÓÚÏÔÊ¾³ÇÊĞÃû
+	 * ç”¨äºæ˜¾ç¤ºåŸå¸‚å
 	 */
 	private TextView cityNameText;
 	/**
-	 * ÓÃÓÚÏÔÊ¾·¢²¼Ê±¼ä
+	 * ç”¨äºæ˜¾ç¤ºå‘å¸ƒæ—¶é—´
 	 */
 	private TextView publishText;
 	/**
-	 * ÓÃÓÚÏÔÊ¾ÌìÆøÃèÊöĞÅÏ¢
+	 * ç”¨äºæ˜¾ç¤ºå¤©æ°”æè¿°ä¿¡æ¯
 	 */
 	private TextView weatherDespText;
 	/**
-	 * ÓÃÓÚÏÔÊ¾ÆøÎÂ1
+	 * ç”¨äºæ˜¾ç¤ºæ°”æ¸©1
 	 */
 	private TextView temp1Text;
 	/**
-	 * ÓÃÓÚÏÔÊ¾ÆøÎÂ2
+	 * ç”¨äºæ˜¾ç¤ºæ°”æ¸©2
 	 */
 	private TextView temp2Text;
 	/**
-	 * ÓÃÓÚÏÔÊ¾µ±Ç°ÈÕÆÚ
+	 * ç”¨äºæ˜¾ç¤ºå½“å‰æ—¥æœŸ
 	 */
 	private TextView currentDateText;
+	/**
+	 * åˆ‡æ¢åŸå¸‚æŒ‰é’®
+	 */
+	private Button switchCity;
+	/**
+	 * æ›´æ–°å¤©æ°”æŒ‰é’®
+	 */
+	private Button refreshWeather;
 	
 	
 	@Override
@@ -53,7 +63,7 @@ public class WeatherActivity extends Activity{
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.weather_layout);
-		// ³õÊ¼»¯¸÷¿Ø¼ş
+		// åˆå§‹åŒ–å„æ§ä»¶
 		weatherInfoLayout = (LinearLayout) findViewById(R.id.weather_info_layout);
 		cityNameText = (TextView) findViewById(R.id.city_name);
 		publishText = (TextView) findViewById(R.id.publish_text);
@@ -61,22 +71,49 @@ public class WeatherActivity extends Activity{
 		temp1Text = (TextView) findViewById(R.id.temp1);
 		temp2Text = (TextView) findViewById(R.id.temp2);
 		currentDateText = (TextView) findViewById(R.id.current_date);
+		
+		
+		switchCity = (Button) findViewById(R.id.switch_city);
+		refreshWeather = (Button) findViewById(R.id.refresh_weather);
 		String countyCode = getIntent().getStringExtra("county_code");
 		if (!TextUtils.isEmpty(countyCode)) {
-			// ÓĞÏØ¼¶´úºÅÊ±¾ÍÈ¥²éÑ¯ÌìÆø
-			publishText.setText("Í¬²½ÖĞ...");
+			// æœ‰å¿çº§ä»£å·æ—¶å°±å»æŸ¥è¯¢å¤©æ°”
+			publishText.setText("åŒæ­¥ä¸­...");
 			weatherInfoLayout.setVisibility(View.INVISIBLE);
 			cityNameText.setVisibility(View.INVISIBLE);
 			queryWeatherCode(countyCode);
 		} else {
-			// Ã»ÓĞÏØ¼¶´úºÅÊ±¾ÍÖ±½ÓÏÔÊ¾±¾µØÌìÆø
+			// æ²¡æœ‰å¿çº§ä»£å·æ—¶å°±ç›´æ¥æ˜¾ç¤ºæœ¬åœ°å¤©æ°”
 			showWeather();
 		}
+		switchCity.setOnClickListener(this);
+		refreshWeather.setOnClickListener(this);
 	}
 	
 	
+	@Override
+	public void onClick(View v) {
+		switch (v.getId()) {
+		case R.id.switch_city:
+			Intent intent = new Intent(this, ChooseAreaActivity.class);
+			intent.putExtra("from_weather_activity", true);
+			startActivity(intent);
+			finish();
+			break;
+		case R.id.refresh_weather:
+			publishText.setText("éšå±¾î„æ¶“ï¿½...");
+			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+			String weatherCode = prefs.getString("weather_code", "");
+			if (!TextUtils.isEmpty(weatherCode)) {
+				queryWeatherInfo(weatherCode);
+			}
+			break;
+		default:
+			break;
+		}
+	}
 	/**
-	 * ²éÑ¯ÏØ¼¶´úºÅËù¶ÔÓ¦µÄÌìÆø´úÂë
+	 * æŸ¥è¯¢å¿çº§ä»£å·æ‰€å¯¹åº”çš„å¤©æ°”ä»£ç 
 	 */
 	private void queryWeatherCode(String countyCode) {
 		String address = "http://www.weather.com.cn/data/list3/city" + countyCode + ".xml";
@@ -84,7 +121,7 @@ public class WeatherActivity extends Activity{
 	}
 
 	/**
-	 * ²éÑ¯ÌìÆø´úºÅËù¶ÔÓ¦µÄÌìÆø
+	 * æŸ¥è¯¢å¤©æ°”ä»£å·æ‰€å¯¹åº”çš„å¤©æ°”
 	 */
 	private void queryWeatherInfo(String weatherCode) {
 		String address = "http://www.weather.com.cn/data/cityinfo/" + weatherCode + ".html";
@@ -92,7 +129,7 @@ public class WeatherActivity extends Activity{
 	}
 	
 	/**
-	 * ¸ù¾İ´«ÈëµÄµØÖ·ºÍÀàĞÍÈ¥Ïò·şÎñÆ÷²éÑ¯ÌìÆø´úºÅ»òÕßÌìÆøĞÅÏ¢
+	 * æ ¹æ®ä¼ å…¥çš„åœ°å€å’Œç±»å‹å»å‘æœåŠ¡å™¨æŸ¥è¯¢å¤©æ°”ä»£å·æˆ–è€…å¤©æ°”ä¿¡æ¯
 	 */
 	private void queryFromServer(final String address, final String type) {
 		HttpUtil.sendHttpRequest(address, new HttpCallbackListener() {
@@ -100,7 +137,7 @@ public class WeatherActivity extends Activity{
 			public void onFinish(final String response) {
 				if ("countyCode".equals(type)) {
 					if (!TextUtils.isEmpty(response)) {
-						// ´Ó·şÎñÆ÷·µ»ØµÄÊı¾İÖĞ½âÎö³öÌìÆø´úÂë
+						// ä»æœåŠ¡å™¨è¿”å›çš„æ•°æ®ä¸­è§£æå‡ºå¤©æ°”ä»£ç 
 						String[] array = response.split("\\|");
 						if (array != null && array.length == 2) {
 							String weatherCode = array[1];
@@ -108,7 +145,7 @@ public class WeatherActivity extends Activity{
 						}
 					}
 				} else if ("weatherCode".equals(type)) {
-					// ´¦Àí·şÎñÆ÷·µ»ØµÄÌìÆøĞÅÏ¢
+					// å¤„ç†æœåŠ¡å™¨è¿”å›çš„å¤©æ°”ä¿¡æ¯
 					Utility.handleWeatherResponse(WeatherActivity.this, response);
 					runOnUiThread(new Runnable() {
 						@Override
@@ -124,7 +161,7 @@ public class WeatherActivity extends Activity{
 				runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						publishText.setText("Í¬²½Ê§°Ü");
+						publishText.setText("åŒæ­¥å¤±è´¥");
 					}
 				});
 			}
@@ -132,7 +169,7 @@ public class WeatherActivity extends Activity{
 	}
 	
 	/**
-	 * ´ÓSharedPreferencesÎÄ¼şÖĞ¶ÁÈ¡´æ´¢µÄÌìÆøĞÅÏ¢£¬²¢ÏÔÊ¾µ½½çÃæÉÏ
+	 * ä»SharedPreferencesæ–‡ä»¶ä¸­è¯»å–å­˜å‚¨çš„å¤©æ°”ä¿¡æ¯ï¼Œå¹¶æ˜¾ç¤ºåˆ°ç•Œé¢ä¸Š
 	 */
 	private void showWeather() {
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -140,10 +177,12 @@ public class WeatherActivity extends Activity{
 		temp1Text.setText(prefs.getString("temp1", ""));
 		temp2Text.setText(prefs.getString("temp2", ""));
 		weatherDespText.setText(prefs.getString("weather_desp", ""));
-		publishText.setText("½ñÌì" + prefs.getString("publish_time", "") + "·¢²¼");
+		publishText.setText("ä»Šå¤©" + prefs.getString("publish_time", "") + "å‘å¸ƒ");
 		currentDateText.setText(prefs.getString("current_date", ""));
 		weatherInfoLayout.setVisibility(View.VISIBLE);
 		cityNameText.setVisibility(View.VISIBLE);
+		Intent intent = new Intent(this,AutoUpdateService.class);
+		startService(intent);
 		
 	}
 
