@@ -5,7 +5,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.database.sqlite.SQLiteOpenHelper;
 
-public class NiceweatherOpenHelper extends SQLiteOpenHelper {
+public class NiceWeatherOpenHelper extends SQLiteOpenHelper {
 	
 	/**
 	 * Ω®±Ì”Ôæ‰:Province
@@ -49,7 +49,7 @@ public class NiceweatherOpenHelper extends SQLiteOpenHelper {
 			+ "county_code text,"
 			+ "city_id integer)";
 	
-	public NiceweatherOpenHelper(Context context, String name,
+	public NiceWeatherOpenHelper(Context context, String name,
 			CursorFactory factory, int version) {
 		super(context, name, factory, version);
 		// TODO Auto-generated constructor stub

@@ -1,4 +1,4 @@
-package com.niceweather.app.model;
+package com.niceweather.app.db;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,9 +8,11 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-import com.niceweather.app.db.NiceweatherOpenHelper;
+import com.niceweather.app.model.City;
+import com.niceweather.app.model.County;
+import com.niceweather.app.model.Province;
 
-public class NiceweatherDB {
+public class NiceWeatherDB {
 	
 	/**
 	 * 数据库名
@@ -23,15 +25,15 @@ public class NiceweatherDB {
 	 */
 	
 	public static final int VERSION=1;
-	private static NiceweatherDB niceweatherDB;
+	private static NiceWeatherDB niceweatherDB;
 	private SQLiteDatabase db;
 	
 	/**
 	 * 将构造方法私有化
 	 */
 	
-	private NiceweatherDB(Context context){
-		NiceweatherOpenHelper dbHelper = new NiceweatherOpenHelper(context,DB_NAME,null,VERSION); 
+	private NiceWeatherDB(Context context){
+		NiceWeatherOpenHelper dbHelper = new NiceWeatherOpenHelper(context,DB_NAME,null,VERSION); 
 		db=dbHelper.getWritableDatabase();
 	}
 	
@@ -39,9 +41,9 @@ public class NiceweatherDB {
 	 * 获取NiceweatherDB的实例
 	 */
 	
-	public synchronized static NiceweatherDB getInstance(Context context){
+	public synchronized static NiceWeatherDB getInstance(Context context){
 		if(niceweatherDB ==null){
-			niceweatherDB = new NiceweatherDB(context);
+			niceweatherDB = new NiceWeatherDB(context);
 		}
 		return niceweatherDB;
 	}
@@ -102,7 +104,8 @@ public class NiceweatherDB {
 	
 	public List<City> loadCities(int provinceId){
 		List<City> list = new ArrayList<City>();
-		Cursor cursor = db.query("City", null, "province_id = ?", new String[]{String.valueOf(provinceId)}, null, null, null);
+		Cursor cursor = db.query("City", null, "province_id = ?", 
+				new String[]{String.valueOf(provinceId)}, null, null, null);
 		if(cursor.moveToFirst()){
 			do{
 				City city = new City();
@@ -130,7 +133,7 @@ public class NiceweatherDB {
 			ContentValues values = new ContentValues();
 			values.put("county_name", county.getCountyName());
 			values.put("county_code", county.getCountyCode());
-			values.put("county_id", county.getCityId());
+			values.put("city_id", county.getCityId());
 			db.insert("County", null, values);
 		}
 	}
@@ -141,7 +144,8 @@ public class NiceweatherDB {
 	
 	public List<County> loadCounties(int cityId){
 		List<County> list = new ArrayList<County>();
-		Cursor cursor = db.query("County",null,"city_id = ?", new String[]{String.valueOf(cityId)},null , null, null);
+		Cursor cursor = db.query("County",null,"city_id = ?", 
+				new String[]{String.valueOf(cityId)},null , null, null);
 		if(cursor.moveToFirst()){
 			do{
 				County county = new County();
